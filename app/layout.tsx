@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import TopNav from "./sidenav";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const metadata: Metadata = {
+  title: "Your Blog",
+  description: "A personal blog platform",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="mn">
-      <body>{children}</body>
+      <body>
+        <TopNav />
+        <main className=" mx-auto mt-10 ">{children}</main>
+      </body>
     </html>
   );
 }

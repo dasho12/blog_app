@@ -18,7 +18,9 @@ model Post {
   content   String
   imageUrl  String?
   createdAt DateTime  @default(now())
+  tags      String[]  
   comments  Comment[]
+  
 }
 
 model Comment {
