@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useSession } from "next-auth/react"; // next-auth ашиглан session авна
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Post } from "../../../lib/types";
 import { Image, Save, X, Tag } from "lucide-react";
 
 const availableTags = ["Tech", "Life", "Education", "Health", "Travel"];
@@ -14,17 +14,40 @@ export default function NewPost() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [customTag, setCustomTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { data: session, status } = useSession();
   const router = useRouter();
 
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+    }
+  }, [status, router]);
+
+  if (status === "loading") {
+    return <p className="text-center py-10">Ачааллаж байна...</p>;
+  }
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // session байгаа эсэхийг шалгах
+    if (!session?.user?.id) {
+      alert("Хэрэглэгчийн мэдээлэл олдсонгүй. Та нэвтэрч орно уу.");
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, content, imageUrl, tags: selectedTags }),
+        body: JSON.stringify({
+          title,
+          content,
+          imageUrl,
+          tags: selectedTags,
+          authorId: session.user.id, // userId биш, authorId
+        }),
       });
 
       if (res.ok) {
@@ -41,16 +64,16 @@ export default function NewPost() {
     }
   };
 
-  const toggleTag = (tags: string) => {
+  const toggleTag = (tag: string) => {
     setSelectedTags((prevTags) =>
-      prevTags.includes(tags)
-        ? prevTags.filter((t) => t !== tags)
-        : [...prevTags, tags]
+      prevTags.includes(tag)
+        ? prevTags.filter((t) => t !== tag)
+        : [...prevTags, tag]
     );
   };
 
   const addCustomTag = () => {
-    if (customTag.trim() !== "" && !selectedTags.includes(customTag)) {
+    if (customTag.trim() && !selectedTags.includes(customTag)) {
       setSelectedTags([...selectedTags, customTag.trim()]);
       setCustomTag("");
     }
@@ -80,7 +103,7 @@ export default function NewPost() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-300 placeholder-gray-400"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
 
@@ -94,7 +117,7 @@ export default function NewPost() {
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={6}
-                className="block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-300 placeholder-gray-400 resize-y"
+                className="block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 resize-y"
               />
             </div>
 
@@ -108,7 +131,7 @@ export default function NewPost() {
                   placeholder="Зургийн URL оруулна уу"
                   value={imageUrl}
                   onChange={(e) => setImageUrl(e.target.value)}
-                  className="flex-grow px-4 py-3 border border-gray-300 rounded-l-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-300 placeholder-gray-400"
+                  className="flex-grow px-4 py-3 border border-gray-300 rounded-l-md focus:ring-blue-500 focus:border-blue-500"
                 />
                 <span className="inline-flex items-center px-3 bg-gray-100 border border-l-0 border-gray-300 rounded-r-md">
                   <Image className="text-gray-500" size={20} />
@@ -158,7 +181,7 @@ export default function NewPost() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-grow flex items-center justify-center bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-grow flex items-center justify-center bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition disabled:opacity-50"
               >
                 <Save className="mr-2" size={20} />
                 {isSubmitting ? "Хадгалж байна..." : "Нийтлэл Үүсгэх"}
@@ -166,7 +189,7 @@ export default function NewPost() {
               <button
                 type="button"
                 onClick={() => router.push("/posts")}
-                className="flex-grow flex items-center justify-center bg-gray-100 text-gray-700 py-3 px-6 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition duration-300"
+                className="flex-grow flex items-center justify-center bg-gray-100 text-gray-700 py-3 px-6 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 transition"
               >
                 <X className="mr-2" size={20} />
                 Цуцлах

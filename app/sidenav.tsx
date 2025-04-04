@@ -74,7 +74,7 @@
 // }
 "use client";
 import { useState } from "react";
-import { Home, User, Plus } from "lucide-react";
+import { Home, User, Users, Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -82,9 +82,10 @@ export default function SideNav() {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/", icon: <Home size={24} /> },
-    { href: "/posts", icon: <User size={24} /> },
+    { href: "/home", icon: <Home size={24} /> },
+    { href: "/posts", icon: <Users size={24} /> },
     { href: "/posts/new", icon: <Plus size={24} /> },
+    { href: "/profile", icon: <User size={24} /> },
   ];
 
   return (
